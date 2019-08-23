@@ -1,0 +1,31 @@
+version: '3.3'
+services:
+  wp:
+    image: wordpress:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - ./config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      - ./wp-app:/var/www/html
+    env_file: ./containers/wp/.env
+    depends_on:
+      - db
+    links:
+      - db
+  wpcli:
+    image: wordpress:cli
+    volumes:
+      - ./containers/wpcli/install_packages.sh:/opt/install_packages.sh
+      - ./config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      - ./wp-app:/var/www/html
+    depends_on:
+      - wp
+    command: "/opt/install_packages.sh"
+  db:
+    image: mysql:5.7
+    env_file: ./containers/mysql/.env
+    volumes:
+      - ./wp-data:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+volumes:
+  db_data: {}
